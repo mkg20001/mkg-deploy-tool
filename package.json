@@ -1,0 +1,16 @@
+{
+  "name": "mkg-deploy-tool",
+  "version": "0.0.1",
+  "description": "A deployment tool for servers",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "deploy",
+    "tool",
+    "mkg"
+  ],
+  "author": "Maciej Krüger <mkg20001@gmail.com>",
+  "license": "MPL-2.0"
+}
