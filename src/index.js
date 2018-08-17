@@ -13,14 +13,16 @@ const Modules = {
 function compileFile (data, main, host) {
   /*
 
-  Structure:
+  Step Lifecycle:
+    isOrphan?
+      remove
     affects?
       pre
       installed?
-        installedVer == newVer?
-          update
-        else
+        upgradeCond?
           upgrade
+        else
+          update
       else
         install
       post
@@ -136,4 +138,9 @@ function processFile (name, data, main) {
   let version = data.version || 'v0'
 
   return {affects, lifecycle, steps, embed, name, version}
+}
+
+module.exports = {
+  compileFile,
+  processFile
 }
