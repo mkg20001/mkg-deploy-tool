@@ -14,7 +14,8 @@ module.exports = (config) => { // config is an array of entries about which rule
         .cmd('rm', '-fv', to)
         .if(`[ -e "${to}.bak" ]`, utils.tree().cmd('mv', '-v', `${to}.bak`, `${to}`))
         .str(),
-      displayName: 'link from ' + [from, to].map(JSON.stringify).join(' to ')
+      displayName: 'link from ' + [from, to].map(JSON.stringify).join(' to '),
+      embed: [from]
     })
   })
 }

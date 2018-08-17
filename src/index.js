@@ -32,7 +32,7 @@ function compileFile (data, main) {
 
   function wrapStep (what, whatDisplay, step) {
     if (step[what]) {
-      return utils.tree().cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
+      return utils.tree().append('# ' + step.fullId + ' ' + what).cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
     }
     return 'true # ' + step.fullId + ' ' + what
   }
