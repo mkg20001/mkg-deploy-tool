@@ -8,10 +8,10 @@ const treeFnc = {
     let out = ['if ' + sCond + '; then', sIf]
     while (args.length >= 2) {
       let [sCond, sElif] = args.splice(0, 2)
-      out.push(['elif ' + sCond + '; then', sElif])
+      out.push('elif ' + sCond + '; then', sElif)
     }
     if (args.length) {
-      out.push(['else', args[0]])
+      out.push('else', args[0])
     }
     out.push('fi')
     return out.join('\n')
@@ -19,11 +19,17 @@ const treeFnc = {
   varArray: (name, ar) => {
     return name + '=(' + shellEscape(ar) + ')'
   },
+  varExec: (name, ...cmd) => {
+    return name + '=$(' + shellEscape(cmd) + ')'
+  },
   var: (name, val) => {
     return name + '=' + shellEscape([val])
   },
   for: (as, from, code) => {
-    return ['for ' + as + ' in ' + from + '; do', code, done].join('\n')
+    return ['for ' + as + ' in ' + from + '; do', code, 'done'].join('\n')
+  },
+  cmd: (...args) => {
+    return shellEscape(args)
   },
   append: (...str) => str.join('\n')
 }
@@ -35,9 +41,13 @@ function tree () {
     obj[fnc] = (...args) => {
       args = args.map(a => a._isTreeObj ? a.str() : a)
       out.push(treeFnc[fnc](...args))
+
+      return obj
     }
   }
   obj.str = () => out.join('\n')
+
+  return obj
 }
 
 function parseCmd (line) {

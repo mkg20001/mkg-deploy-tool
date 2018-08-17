@@ -36,3 +36,7 @@ getInstalledStatus() {
   safeexec test -e "$STEP_FOLDER/${SCRIPT_ID}_installed"
   return $ex
 }
+
+getInstalledSteps() {
+  dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_"
+}

@@ -1,7 +1,6 @@
 'use strict'
 
-const yaml = require('js-yaml')
-const utils = require('../utils')
+const utils = require('./utils')
 
 /* eslint-disable guard-for-in */
 /* eslint-disable no-template-curly-in-string */
@@ -10,7 +9,7 @@ const Modules = {
   ufw: require('./mod/ufw')
 }
 
-function compileFile (data, main, host) {
+function compileFile (data, main) {
   /*
 
   Step Lifecycle:
@@ -33,7 +32,7 @@ function compileFile (data, main, host) {
     if (step[what]) {
       return utils.tree().cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what])
     }
-    return '# ' + step.fullId + ' ' + what
+    return 'true # ' + step.fullId + ' ' + what
   }
 
   function getVars () {
@@ -41,7 +40,7 @@ function compileFile (data, main, host) {
       .var('SCRIPT_NAME', data.name)
       .var('SCRIPT_VERSION', data.version)
       .var('SCRIPT_ID', utils.shortHash(data.name))
-      .varExec('SCRIPT_CUR_VERSION', 'getVersion')
+    // .varExec('SCRIPT_CUR_VERSION', 'getVersion')
       .varExec('SCRIPT_INSTALLED', 'getInstalledStatus')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
@@ -49,17 +48,17 @@ function compileFile (data, main, host) {
 
   function removeScript () {
     return utils.tree()
-      .cmd('.', '$STATE_FOLDER/${step}_uninstall.sh')
-      .cmd('rm', '$STATE_FOLDER/${step}_uninstall.sh')
-      .cmd('rm', '$STATE_FOLDER/${step}_installed')
+      .cmd('.', '$STATE_FOLDER/${STEP_ID}_uninstall.sh')
+      .cmd('rm', '$STATE_FOLDER/${STEP_ID}_uninstall.sh')
+      .cmd('rm', '$STATE_FOLDER/${STEP_ID}_installed')
   }
 
-  utils.tree()
+  return utils.tree()
     .varArray('affects', data.affects)
     .if('contains "${affects[@]}" "$(hostname)"', getVars()
       // uninstall old steps
-      .for('step', '$STEPS_INSTALLED', utils.tree()
-        .if('! contains "${SCRIPT_STEPS[@]}" "${step}"', removeScript())
+      .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
+        .if('! contains "${SCRIPT_STEPS[@]}" "${STEP_ID}"', removeScript())
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()
@@ -71,29 +70,18 @@ function compileFile (data, main, host) {
           step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
           wrapStep('update', 'Updating', step))
-        .append(utils.tree()
-          .cmd('echo', '1')
-          .append('>')
-          .cmd('$STATE_FOLDER/${step}_installed'))
-        .append(utils.tree()
-          .cmd('echo', Buffer.from(wrapStep('remove', 'Removing')).toString('base64'))
-          .append('|')
-          .cmd('base64', '-d')
-          .append('>')
-          .cmd('$STATE_FOLDER/${step}_uninstall.sh'))
+        .append('echo 1 > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"')
+        .append('echo ' + Buffer.from(wrapStep('remove', 'Removing', step).str()).toString('base64') + ' |' +
+          'base64 -d > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_uninstall.sh"')
         .append(wrapStep('post', 'Running post hook for', step))
       ))
-      .append(utils.tree()
-        .cmd('echo', data.version)
-        .append('>')
-        .cmd('$STATE_FOLDER/${step}_installed'))
-      .append(utils.tree()
-        .cmd('echo', Buffer.from(getVars().append(data.steps.map(step => utils.tree() // uninstall all scripts
-          .var('step', step.fullId)
-          .if('isStepInstalled ' + step.fullId, removeScript())
-        ))).toString('base64'))
-      ) // write uninstall script
+      .append('echo "${SCRIPT_VERSION}" > "$STATE_FOLDER/script_${SCRIPT_ID}_installed"')
+      .append('echo ' + Buffer.from(getVars().append(data.steps.map(step => utils.tree() // write uninstall script
+        .var('STEP_ID', step.fullId)
+        .if('isStepInstalled ' + step.fullId, removeScript())
+      )).str()).toString('base64') + ' > "$STATE_FOLDER/script_${SCRIPT_ID}_uninstall.sh"')
     )
+    .str()
 }
 
 function processFile (name, data, main) {
@@ -115,19 +103,27 @@ function processFile (name, data, main) {
   }
   if (Array.isArray(data.affects.groups)) {
     data.affects.groups.forEach(group => {
-      affects = affects.concat(main.groups[group])
+      if (main.groups[group]) {
+        affects = affects.concat(main.groups[group])
+      }
     })
   }
   if (typeof data.affects.groups === 'string') {
-    affects = affects.concat(main.groups[data.affects.groups])
+    if (main.groups[data.affects.groups]) {
+      affects = affects.concat(main.groups[data.affects.groups])
+    }
   }
   if (Array.isArray(data.affects.group)) {
     data.affects.group.forEach(group => {
-      affects = affects.concat(main.groups[group])
+      if (main.groups[group]) {
+        affects = affects.concat(main.groups[group])
+      }
     })
   }
   if (typeof data.affects.group === 'string') {
-    affects = affects.concat(main.groups[data.affects.group])
+    if (main.groups[data.affects.group]) {
+      affects = affects.concat(main.groups[data.affects.group])
+    }
   }
 
   // modules
@@ -145,7 +141,7 @@ function processFile (name, data, main) {
   }
 
   steps.map(s => {
-    s.fullId = s.type + '_' + utils.shortHash(data.name) + '_' + s.id
+    s.fullId = s.type + '_' + utils.shortHash(name) + '_' + s.id
   })
 
   // embed
