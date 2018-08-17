@@ -36,10 +36,8 @@ function compileFile (data, main, host) {
     return '# ' + step.fullId + ' ' + what
   }
 
-  utils.tree()
-    .varArray('affects', data.affects)
-    .if('contains "${affects[@]}" "$(hostname)"', utils.tree()
-      // vars
+  function getVars () {
+    return utils.tree()
       .var('SCRIPT_NAME', data.name)
       .var('SCRIPT_VERSION', data.version)
       .var('SCRIPT_ID', utils.shortHash(data.name))
@@ -47,19 +45,28 @@ function compileFile (data, main, host) {
       .varExec('SCRIPT_INSTALLED', 'getInstalledStatus')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
+  }
+
+  function removeScript () {
+    return utils.tree()
+      .cmd('.', '$STATE_FOLDER/${step}_uninstall.sh')
+      .cmd('rm', '$STATE_FOLDER/${step}_uninstall.sh')
+      .cmd('rm', '$STATE_FOLDER/${step}_installed')
+  }
+
+  utils.tree()
+    .varArray('affects', data.affects)
+    .if('contains "${affects[@]}" "$(hostname)"', getVars()
       // uninstall old steps
       .for('step', '$STEPS_INSTALLED', utils.tree()
-        .if('! contains "${SCRIPT_STEPS[@]}" "$step"', utils.tree()
-          .cmd('.', '$STATE_FOLDER/$step_uninstall.sh')
-          .cmd('rm', '$STATE_FOLDER/$step_uninstall.sh')
-          .cmd('rm', '$STATE_FOLDER/$step_installed'))
+        .if('! contains "${SCRIPT_STEPS[@]}" "${step}"', removeScript())
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()
         .var('step', step.fullId)
         .append(wrapStep('pre', 'Running pre hook for', step))
         // if not installed: install
-        .if('! isStepInstalled ' + wrapStep('install', 'Installing', step),
+        .if('! isStepInstalled ' + step.fullId, wrapStep('install', 'Installing', step),
           // if upgrade avail: upgrade
           step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
@@ -67,15 +74,25 @@ function compileFile (data, main, host) {
         .append(utils.tree()
           .cmd('echo', '1')
           .append('>')
-          .cmd('$STATE_FOLDER/$step_installed'))
+          .cmd('$STATE_FOLDER/${step}_installed'))
         .append(utils.tree()
           .cmd('echo', Buffer.from(wrapStep('remove', 'Removing')).toString('base64'))
           .append('|')
           .cmd('base64', '-d')
           .append('>')
-          .cmd('$STATE_FOLDER/$step_uninstall.sh'))
+          .cmd('$STATE_FOLDER/${step}_uninstall.sh'))
         .append(wrapStep('post', 'Running post hook for', step))
       ))
+      .append(utils.tree()
+        .cmd('echo', data.version)
+        .append('>')
+        .cmd('$STATE_FOLDER/${step}_installed'))
+      .append(utils.tree()
+        .cmd('echo', Buffer.from(getVars().append(data.steps.map(step => utils.tree() // uninstall all scripts
+          .var('step', step.fullId)
+          .if('isStepInstalled ' + step.fullId, removeScript())
+        ))).toString('base64'))
+      ) // write uninstall script
     )
 }
 

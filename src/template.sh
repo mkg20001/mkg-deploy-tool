@@ -16,3 +16,23 @@ function contains() {
 DATA_PREFIX="/etc/test-script-data" # TODO: make this customizable
 STATE_FOLDER="$DATA_PREFIX/state"
 mkdir -p "$STATE_FOLDER"
+
+HLINE="================================================================================"
+
+safeexec() {
+  ex=0
+  "$@" || ex=$?
+}
+
+heading() {
+  echo -e "\n\n$HLINE\n$*\n$HLINE\n\n"
+}
+
+getVersion() {
+  cat "$STATE_FOLDER/${SCRIPT_ID}_installed"
+}
+
+getInstalledStatus() {
+  safeexec test -e "$STEP_FOLDER/${SCRIPT_ID}_installed"
+  return $ex
+}
