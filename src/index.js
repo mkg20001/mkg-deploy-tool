@@ -78,10 +78,10 @@ function compileFile (data, main) {
         .append(wrapStep('post', 'Running post hook for', step))
       ))
       .append('echo "${SCRIPT_VERSION}" > "$STATE_FOLDER/script_${SCRIPT_ID}_installed"')
-      .append('echo ' + Buffer.from(getVars().append(data.steps.map(step => utils.tree() // write uninstall script
-        .var('STEP_ID', step.fullId)
-        .if('isStepInstalled ' + step.fullId, removeScript())
-      )).str()).toString('base64') + ' > "$STATE_FOLDER/script_${SCRIPT_ID}_uninstall.sh"')
+      .append('echo ' + Buffer.from(getVars().for('STEP_ID', '$SCRIPT_STEPS', utils.tree() // write uninstall script
+        .if('isStepInstalled $STEP_ID', removeScript())
+      ).str()).toString('base64') + '|' +
+      'base64 -d  > "$STATE_FOLDER/script_${SCRIPT_ID}_uninstall.sh"')
     )
     .str()
 }
