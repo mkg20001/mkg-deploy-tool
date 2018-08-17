@@ -109,14 +109,14 @@ function processFile (name, data, main) {
   // modules
   let modules = data.modules || {}
   let steps = []
-  for (const module in modules) { // eslint-disable-line guard-for-in
+  for (const module in modules) {
     let out = Modules[module](modules[module])
     steps = steps.concat(Array.isArray(out) ? out : [out])
   }
 
   // lifecycle
   let lifecycle = data.lifecycle || {}
-  for (const lf in lifecycle) { // eslint-disable-line guard-for-in
+  for (const lf in lifecycle) {
     lifecycle[lf] = lifecycle[lf].join('\n')
   }
 
