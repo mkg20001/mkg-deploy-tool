@@ -51,7 +51,8 @@ function tree () {
 }
 
 function parseCmd (line) {
-  return parser(line).commands[0].suffix.map(s => s.text)
+  let parsed = parser(line).commands[0]
+  return [parsed.name.text, ...parsed.suffix.map(s => s.text)]
 }
 
 const crypto = require('crypto')
