@@ -10,7 +10,7 @@ const Modules = {
   ufw: require('./mod/ufw')
 }
 
-function compileFile(data, main, host) {
+function compileFile (data, main, host) {
   /*
 
   Structure:
@@ -27,8 +27,11 @@ function compileFile(data, main, host) {
 
   */
 
-  function wrapStep (what, step) {
-    utils.tree()
+  function wrapStep (what, whatDisplay, step) {
+    if (step[what]) {
+      return utils.tree().cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what])
+    }
+    return '# ' + step.fullId + ' ' + what
   }
 
   utils.tree()
@@ -50,26 +53,28 @@ function compileFile(data, main, host) {
           .cmd('rm', '$STATE_FOLDER/$step_installed'))
       )
       // install/upgrade/update new ones
-      .append(...data.steps.map(s => utils.tree()
-        .append(step.pre || ('#' + s.fullId + ' pre'))
-         // if not installed: install
-        .if('! isStepInstalled ' + s.fullId, step.add || ('# ' + s.fullId + ' add'),
+      .append(...data.steps.map(step => utils.tree()
+        .var('step', step.fullId)
+        .append(wrapStep('pre', 'Running pre hook for', step))
+        // if not installed: install
+        .if('! isStepInstalled ' + wrapStep('install', 'Installing', step),
           // if upgrade avail: upgrade
-          step.upgradeCond || 'false', step.upgrade,
+          step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
-          step.update || ('#' + s.fullId + ' update'))
-        .append(step.post || ('#' + s.fullId + ' post'))
-      /* .append(data.modules.map(s => wrapStep('pre', s)))
-      .if('$SCRIPT_INSTALLED', utils.tree()
-        .if('[ "$SCRIPT_VERSION" != "$SCRIPT_CUR_VERSION" ]', () => {
-
-        }),
-      utils.tree()
-        .if()
-      )
-      .append(data.modules.map(s => wrapStep('post', s))) */
+          wrapStep('update', 'Updating', step))
+        .append(utils.tree()
+          .cmd('echo', '1')
+          .append('>')
+          .cmd('$STATE_FOLDER/$step_installed'))
+        .append(utils.tree()
+          .cmd('echo', Buffer.from(wrapStep('remove', 'Removing')).toString('base64'))
+          .append('|')
+          .cmd('base64', '-d')
+          .append('>')
+          .cmd('$STATE_FOLDER/$step_uninstall.sh'))
+        .append(wrapStep('post', 'Running post hook for', step))
+      ))
     )
-  )
 }
 
 function processFile (name, data, main) {
