@@ -6,6 +6,8 @@ const utils = require('./utils')
 /* eslint-disable no-template-curly-in-string */
 
 const Modules = {
+  link: require('./mod/link'),
+  pkg: require('./mod/pkg'),
   ufw: require('./mod/ufw')
 }
 
@@ -30,7 +32,7 @@ function compileFile (data, main) {
 
   function wrapStep (what, whatDisplay, step) {
     if (step[what]) {
-      return utils.tree().cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what])
+      return utils.tree().cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
     }
     return 'true # ' + step.fullId + ' ' + what
   }
@@ -71,7 +73,7 @@ function compileFile (data, main) {
           // else update
           wrapStep('update', 'Updating', step))
         .append('echo 1 > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"')
-        .append('echo ' + Buffer.from(wrapStep('remove', 'Removing', step).str()).toString('base64') + ' |' +
+        .append('echo ' + Buffer.from(wrapStep('remove', 'Removing', step)).toString('base64') + ' |' +
           'base64 -d > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_uninstall.sh"')
         .append(wrapStep('post', 'Running post hook for', step))
       ))
