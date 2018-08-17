@@ -40,3 +40,8 @@ getInstalledStatus() {
 getInstalledSteps() {
   dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_"
 }
+
+isStepInstalled() {
+  safeexec test -e "$STEP_FOLDER/step_${SCRIPT_ID}_$1_installed"
+  return $ex
+}
