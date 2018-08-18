@@ -172,8 +172,8 @@ function processFile (name, data, main) {
 
   // lifecycle
   let lifecycle = data.lifecycle || {}
-  let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + data.name})
-  let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + data.name})
+  let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + name})
+  let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + name})
   for (const lf in lifecycle) {
     let [name, part] = lf.split('.')
     let data = Array.isArray(lifecycle[lf]) ? lifecycle[lf].join('\n') : lifecycle[lf]
