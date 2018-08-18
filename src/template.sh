@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 function contains() {
   match="$1"
   shift
