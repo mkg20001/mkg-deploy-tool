@@ -47,7 +47,7 @@ function compileFile (data, main) {
       .var('SCRIPT_VERSION', data.version)
       .var('SCRIPT_ID', utils.shortHash(data.name))
     // .varExec('SCRIPT_CUR_VERSION', 'getVersion')
-      .varExec('SCRIPT_INSTALLED', 'getInstalledStatus')
+      .varExec('SCRIPT_INSTALLED', 'getInstalledStatusEcho')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
   }

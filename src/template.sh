@@ -42,6 +42,15 @@ getInstalledStatus() {
   return $ex
 }
 
+getInstalledStatusEcho() {
+  safeexec test -e "$STATE_FOLDER/${SCRIPT_ID}_installed"
+  if [ $ex -ne 0 ]; then
+    echo false
+  else
+    echo true
+  fi
+}
+
 getInstalledSteps() {
   dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_" | sed "s|^step_${SCRIPT_ID}_||g"
 }
