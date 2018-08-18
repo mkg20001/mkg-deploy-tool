@@ -12,6 +12,9 @@ const Modules = {
   ufw: require('./mod/ufw')
 }
 
+const stepPrefx = '$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}'
+const scriptPrefx = '$STATE_FOLDER/script_${SCRIPT_ID}'
+
 function compileFile (data, main) {
   /*
 
@@ -51,9 +54,9 @@ function compileFile (data, main) {
 
   function removeScript () {
     return utils.tree()
-      .cmd('.', '$STATE_FOLDER/${STEP_ID}_uninstall.sh')
-      .cmd('rm', '$STATE_FOLDER/${STEP_ID}_uninstall.sh')
-      .cmd('rm', '$STATE_FOLDER/${STEP_ID}_installed')
+      .cmd('.', stepPrefx + '_uninstall.sh')
+      .cmd('rm', stepPrefx + '_uninstall.sh')
+      .cmd('rm', stepPrefx + '_installed')
   }
 
   return utils.tree()
@@ -76,16 +79,16 @@ function compileFile (data, main) {
           step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
           wrapStep('update', 'Updating', step))
-        .append('echo 1 > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"')
+        .append(`echo 1 > "${stepPrefx}_installed"`)
         .append('echo ' + Buffer.from(wrapStep('remove', 'Removing', step)).toString('base64') + ' |' +
-          'base64 -d > "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_uninstall.sh"')
+          `base64 -d > "${stepPrefx}_uninstall.sh"`)
         .append(wrapStep('post', 'Running post hook for', step))
       ))
-      .append('echo "${SCRIPT_VERSION}" > "$STATE_FOLDER/script_${SCRIPT_ID}_installed"')
+      .append(`echo "true" > "${scriptPrefx}_installed"`)
       .append('echo ' + Buffer.from(getVars().for('STEP_ID', '$SCRIPT_STEPS', utils.tree() // write uninstall script
         .if('isStepInstalled $STEP_ID', removeScript())
       ).str()).toString('base64') + '|' +
-      'base64 -d  > "$STATE_FOLDER/script_${SCRIPT_ID}_uninstall.sh"')
+      `base64 -d  > "${scriptPrefx}_uninstall.sh"`)
     )
     .str()
 }
