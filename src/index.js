@@ -57,8 +57,10 @@ function compileFile (data, main) {
   }
 
   return utils.tree()
-    .varArray('affects', data.affects)
-    .if('contains "${affects[@]}" "$(hostname)"', getVars()
+    .varArray('affects_include', data.affects.include)
+    .varArray('affects_exclude', data.affects.exclude)
+    .var('affects_wildcard', data.affects.wildcard)
+    .if('(contains "${affects_include[@]}" "$(hostname)" || $affects_wildcard) && ! contains "${affects_exclude[@]}" "$(hostname)"', getVars()
       // uninstall old steps
       .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
         .if('! contains "${SCRIPT_STEPS[@]}" "${STEP_ID}"', removeScript())
@@ -87,47 +89,77 @@ function compileFile (data, main) {
     .str()
 }
 
+function calcAffects (groups_, calcGrp) {
+  let groups = {}
+  for (const group in groups_) { // copy
+    groups[group] = groups_[group].slice(0)
+  }
+  groups._ = calcGrp
+
+  for (const group in groups) {
+    groups[group].forEach((e, i) => { // eslint-disable-line
+      if (e.startsWith('$')) { // nested group
+        if (!groups[e.substr(1)]) {
+          throw new Error('Group ' + group + ' references subgroup ' + e.substr(1) + ' that does not exist')
+        }
+        groups[group][i] = {type: 'group', val: groups[e.substr(1)]}
+      } else if (e.startsWith('!$')) { // nested group to exclude
+        if (!groups[e.substr(2)]) {
+          throw new Error('Group ' + group + ' references subgroup ' + e.substr(2) + ' that does not exist')
+        }
+        groups[group][i] = {type: 'group', not: true, val: groups[e.substr(2)]}
+      } else if (e.startsWith('!')) { // host to exclude
+        groups[group][i] = {type: 'host', not: true, val: e.substr(1)}
+      } else if (e === '*') {
+        groups[group][i] = {type: 'wildcard'}
+      } else {
+        groups[group][i] = {type: 'host', val: e}
+      }
+    })
+  }
+
+  let groupsOut = {}
+
+  for (const group in groups) {
+    let include = []
+    let exclude = []
+
+    function pr (ar, not) { // eslint-disable-line
+      ar.forEach(e => { // TODO: ^^
+        let ar = (e.not || not) ? exclude : include
+        switch (e.type) {
+          case 'group':
+            pr(e.val, e.not)
+            break
+          case 'host':
+            ar.push(e.val)
+            break
+          case 'wildcard':
+            break
+          default: throw new TypeError(e.type)
+        }
+      })
+    }
+
+    pr(groups[group])
+
+    exclude.forEach(host => {
+      if (include.indexOf(host) !== -1) {
+        throw new Error('Group ' + group + ' both excludes and includes host ' + host)
+      }
+    })
+
+    let wildcard = include.indexOf('*') !== -1
+
+    groupsOut[group] = {wildcard, include, exclude}
+  }
+
+  return groupsOut._
+}
+
 function processFile (name, data, main) {
-  let affects = []
-
-  // affects
-
-  if (Array.isArray(data.affects.hosts)) {
-    affects = affects.concat(data.affects.hosts)
-  }
-  if (typeof data.affects.hosts === 'string') {
-    affects.push(data.affects.hosts)
-  }
-  if (Array.isArray(data.affects.host)) {
-    affects = affects.concat(data.affects.host)
-  }
-  if (typeof data.affects.hosts === 'string') {
-    affects.push(data.affects.host)
-  }
-  if (Array.isArray(data.affects.groups)) {
-    data.affects.groups.forEach(group => {
-      if (main.groups[group]) {
-        affects = affects.concat(main.groups[group])
-      }
-    })
-  }
-  if (typeof data.affects.groups === 'string') {
-    if (main.groups[data.affects.groups]) {
-      affects = affects.concat(main.groups[data.affects.groups])
-    }
-  }
-  if (Array.isArray(data.affects.group)) {
-    data.affects.group.forEach(group => {
-      if (main.groups[group]) {
-        affects = affects.concat(main.groups[group])
-      }
-    })
-  }
-  if (typeof data.affects.group === 'string') {
-    if (main.groups[data.affects.group]) {
-      affects = affects.concat(main.groups[data.affects.group])
-    }
-  }
+  let affects = data.affects || []
+  affects = calcAffects(main.groups, affects)
 
   // modules
   let modules = data.modules || {}
@@ -167,7 +199,14 @@ function processFile (name, data, main) {
   return {affects, lifecycle, steps, embed, name, version}
 }
 
+function processMain (data) {
+  let groups = data.groups || {}
+
+  return {groups}
+}
+
 module.exports = {
   compileFile,
-  processFile
+  processFile,
+  processMain
 }

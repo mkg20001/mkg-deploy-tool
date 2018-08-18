@@ -3,12 +3,20 @@
 'use strict'
 
 const yaml = require('js-yaml')
-const entry = process.argv[2]
 const fs = require('fs')
 const path = require('path')
-const read = (file) => String(fs.readFileSync(entry))
-const contents = yaml.safeLoad(read(process.argv[2]))
+const read = (file) => yaml.safeLoad(String(fs.readFileSync(file)))
 
-const {compileFile, processFile} = require('.')
+const {compileFile, processFile, processMain} = require('.')
 
-console.log(compileFile(processFile(path.basename(process.argv[2]).split('.')[0], contents, {groups: {}})))
+const main = process.argv[2]
+const confDir = path.join(path.dirname(main), 'deploy.d')
+
+const mainData = processMain(read(main))
+let out = [String(fs.readFileSync(path.join(__dirname, 'src', 'template.sh')))]
+
+fs.readdirSync(confDir).filter(f => f.endsWith('.yaml')).forEach(file => {
+  out.push(compileFile(processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData), mainData))
+})
+
+console.log(out.join('\n'))
