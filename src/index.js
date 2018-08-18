@@ -160,7 +160,7 @@ function calcAffects (groups_, calcGrp) {
     })
 
     let wildcard = include.indexOf('*') !== -1
-    include = include.map(h => h !== '*')
+    include = include.filter(h => h !== '*')
 
     groupsOut[group] = {wildcard, include, exclude}
   }
