@@ -61,8 +61,8 @@ function compileFile (data, main) {
     .varArray('affects_exclude', data.affects.exclude)
     .var('affects_wildcard', data.affects.wildcard)
     .if('(contains "${affects_include[@]}" "$(hostname)" || $affects_wildcard) && ! contains "${affects_exclude[@]}" "$(hostname)"', getVars()
-      // uninstall old steps
       .cmd('headingMain', 'Deploying ' + data.name)
+      // uninstall old steps
       .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
         .if('! contains "${SCRIPT_STEPS[@]}" "${STEP_ID}"', removeScript())
       )

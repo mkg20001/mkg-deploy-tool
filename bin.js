@@ -17,7 +17,7 @@ const main = process.argv[2]
 const confDir = path.join(path.dirname(main), 'deploy.d')
 
 const mainData = processMain(read(main), path.dirname(main))
-let out = [String(fs.readFileSync(path.join(__dirname, 'src', 'template.sh'))), 'export MAINFOLDER=' + shellEscape(path.dirname(main))]
+let out = [String(fs.readFileSync(path.join(__dirname, 'src', 'template.sh'))), 'export MAINFOLDER=' + shellEscape([path.dirname(main)])]
 
 fs.readdirSync(confDir).filter(f => f.endsWith('.yaml')).forEach(file => {
   out.push(compileFile(processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData), mainData))
