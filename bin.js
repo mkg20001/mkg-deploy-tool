@@ -26,5 +26,7 @@ fs.readdirSync(confDir).filter(f => f.endsWith('.yaml')).forEach(file => {
 })
 
 out.push('postRun')
+out.push('')
+cron.push('')
 
 console.log(out.join('\n').replace('-$-CRONSCRIPT-$-', Buffer.from(cron.join('\n')).toString('base64')))
