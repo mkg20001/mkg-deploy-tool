@@ -1,6 +1,7 @@
 'use strict'
 
-const shellEscape = require('shell-escape')
+const shellEscapeReal = require('shell-escape')
+const shellEscape = require('./escapeWithVar')
 const parser = require('bash-parser')
 
 const treeFnc = {
@@ -68,6 +69,7 @@ function wrap (type, data, prop) {
 module.exports = {
   parseCmd,
   shellEscape,
+  shellEscapeReal,
   wrap,
   tree,
   shortHash
