@@ -1,10 +1,13 @@
 #!/bin/bash
 
-# https://stackoverflow.com/a/8574392
 function contains() {
-  local e match="$1"
+  match="$1"
   shift
-  for e; do [[ "$e" == "$match" ]] && return 0; done
+  for e in "$@"; do
+    if [ "$e" == "$match" ]; then
+      return 0
+    fi
+  done
   return 1
 }
 
