@@ -185,8 +185,8 @@ function processFile (name, data, main) {
 
   // lifecycle
   let lifecycle = data.lifecycle || {}
-  let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + name})
-  let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + name})
+  let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + name, priority: 0})
+  let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + name, priority: 1000})
   for (const lf in lifecycle) {
     let [name, part] = lf.split('.')
     let data = Array.isArray(lifecycle[lf]) ? lifecycle[lf].join('\n') : lifecycle[lf]
@@ -197,12 +197,13 @@ function processFile (name, data, main) {
     }
   }
 
-  steps.unshift(lfPre)
-  steps.push(lfPost)
+  steps.push(lfPre, lfPost)
 
   steps.map(s => {
     s.fullId = s.type + '_' + utils.shortHash(name) + '_' + s.id
   })
+
+  steps = steps.sort((a, b) => a.priority - b.priority)
 
   // embed
   let embed = data.embed || []
