@@ -41,7 +41,7 @@ getInstalledStatus() {
 }
 
 getInstalledSteps() {
-  dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_"
+  dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_" | sed "s|^step_${SCRIPT_ID}_||g"
 }
 
 isStepInstalled() {
