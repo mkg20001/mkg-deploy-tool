@@ -67,11 +67,11 @@ function compileFile (data, main) {
       .cmd('headingMain', 'Deploying ' + data.name)
       // uninstall old steps
       .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
-        .if('! contains "${STEP_ID}" "${SCRIPT_STEPS[@]}"', removeScript())
+        .if('! contains "${STEP_ID}" "${SCRIPT_STEPS[@]}" && isStepInstalled ${STEP_ID}', removeScript())
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()
-        .var('step', step.fullId)
+        .var('STEP_ID', step.fullId)
         .append(wrapStep('pre', 'Running pre hook for', step))
         // if not installed: install
         .if('! isStepInstalled ' + step.fullId, wrapStep('install', 'Installing', step),
@@ -85,9 +85,10 @@ function compileFile (data, main) {
         .append(wrapStep('post', 'Running post hook for', step))
       ))
       .append(`echo "true" > "${scriptPrefx}_installed"`)
-      .append('echo ' + Buffer.from(getVars().for('STEP_ID', '$SCRIPT_STEPS', utils.tree() // write uninstall script
-        .if('isStepInstalled $STEP_ID', removeScript())
-      ).str()).toString('base64') + '|' +
+      .append('echo ' + Buffer.from(getVars() // write uninstall script
+        .for('STEP_ID', '$SCRIPT_STEPS', utils.tree()
+          .if('isStepInstalled {$STEP_ID}', removeScript())
+        ).str()).toString('base64') + '|' +
       `base64 -d  > "${scriptPrefx}_uninstall.sh"`)
     )
     .str()
