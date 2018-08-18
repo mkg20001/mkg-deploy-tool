@@ -14,15 +14,23 @@ function contains() {
 }
 
 # main
-DATA_PREFIX="/etc/test-script-data" # TODO: make this customizable
-STATE_FOLDER="$DATA_PREFIX/state"
-mkdir -p "$STATE_FOLDER"
 
 HLINE="================================================================================"
 
-CRON_FILE=$(mktemp)
+DATA_PREFIX="/etc/test-script-data" # TODO: make this customizable
+STATE_FOLDER="$DATA_PREFIX/state"
 
-echo "headingMain 'Running Cron'" > "$CRON_FILE"
+mainEntry() {
+  mkdir -p "$STATE_FOLDER"
+
+  CRON_FILE=$(mktemp)
+
+  echo "-$-CRONSCRIPT-$-" | base64 -d > "$CRON_FILE"
+}
+
+cronEntry() {
+  headingMain 'Running Cron'
+}
 
 safeexec() {
   ex=0
