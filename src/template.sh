@@ -20,6 +20,10 @@ mkdir -p "$STATE_FOLDER"
 
 HLINE="================================================================================"
 
+CRON_FILE=$(mktemp -f)
+
+echo "headingMain 'Running Cron'" > "$CRON_FILE"
+
 safeexec() {
   ex=0
   "$@" || ex=$?
@@ -58,4 +62,9 @@ getInstalledSteps() {
 isStepInstalled() {
   safeexec test -e "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"
   return $ex
+}
+
+postRun() {
+  mv "$CRON_FILE" "$DATA_PREFIX/cron.sh"
+  headingMain "DONE!"
 }

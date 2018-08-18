@@ -86,10 +86,18 @@ function compileFile (data, main) {
       ))
       .append(`echo "true" > "${scriptPrefx}_installed"`)
       .append('echo ' + Buffer.from(getVars() // write uninstall script
-        .for('STEP_ID', '$SCRIPT_STEPS', utils.tree()
+        .for('STEP_ID', '${SCRIPT_STEPS[@]}', utils.tree()
           .if('isStepInstalled', removeScript())
         ).str()).toString('base64') + '|' +
       `base64 -d  > "${scriptPrefx}_uninstall.sh"`)
+      .append('echo ' + Buffer.from(getVars() // append to cron script
+        .append(...data.steps.map(step => utils.tree()
+          .var('STEP_ID', step.fullId)
+          .if('isStepInstalled', wrapStep('cron', 'Running cronjob for', step))
+        ))
+        .str()
+      ).toString('base64') + '|' +
+      'base64 -d >> "$CRON_FILE"')
     )
     .str()
 }

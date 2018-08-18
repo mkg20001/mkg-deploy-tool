@@ -23,6 +23,6 @@ fs.readdirSync(confDir).filter(f => f.endsWith('.yaml')).forEach(file => {
   out.push(compileFile(processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData), mainData))
 })
 
-out.push('headingMain "DONE!"')
+out.push('postRun')
 
 console.log(out.join('\n'))
