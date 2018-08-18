@@ -2,6 +2,8 @@
 
 'use strict'
 
+/* eslint-disable no-console */
+
 const yaml = require('js-yaml')
 const fs = require('fs')
 const path = require('path')
