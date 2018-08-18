@@ -74,7 +74,7 @@ function compileFile (data, main) {
         .var('STEP_ID', step.fullId)
         .append(wrapStep('pre', 'Running pre hook for', step))
         // if not installed: install
-        .if('! isStepInstalled ' + step.fullId, wrapStep('install', 'Installing', step),
+        .if('! isStepInstalled', wrapStep('install', 'Installing', step),
           // if upgrade avail: upgrade
           step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
@@ -87,7 +87,7 @@ function compileFile (data, main) {
       .append(`echo "true" > "${scriptPrefx}_installed"`)
       .append('echo ' + Buffer.from(getVars() // write uninstall script
         .for('STEP_ID', '$SCRIPT_STEPS', utils.tree()
-          .if('isStepInstalled {$STEP_ID}', removeScript())
+          .if('isStepInstalled', removeScript())
         ).str()).toString('base64') + '|' +
       `base64 -d  > "${scriptPrefx}_uninstall.sh"`)
     )

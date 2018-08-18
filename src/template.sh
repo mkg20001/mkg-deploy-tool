@@ -45,6 +45,6 @@ getInstalledSteps() {
 }
 
 isStepInstalled() {
-  safeexec test -e "$STEP_FOLDER/step_${SCRIPT_ID}_$1_installed"
+  safeexec test -e "$STEP_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"
   return $ex
 }
