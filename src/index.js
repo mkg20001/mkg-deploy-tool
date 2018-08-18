@@ -4,6 +4,7 @@ const utils = require('./utils')
 
 /* eslint-disable guard-for-in */
 /* eslint-disable no-template-curly-in-string */
+/* eslint-disable complexity */
 
 const Modules = {
   link: require('./mod/link'),
@@ -138,9 +139,20 @@ function processFile (name, data, main) {
 
   // lifecycle
   let lifecycle = data.lifecycle || {}
+  let lfPre = utils.wrap('lf', 'pre', {})
+  let lfPost = utils.wrap('lf', 'post', {})
   for (const lf in lifecycle) {
-    lifecycle[lf] = lifecycle[lf].join('\n')
+    let [name, part] = lf.split('.')
+    let data = Array.isArray(lifecycle[lf]) ? lifecycle[lf].join('\n') : lifecycle[lf]
+    if (part === 'pre') {
+      lfPre[name] = data
+    } else if (part === 'post') {
+      lfPost[name] = data
+    }
   }
+
+  steps.unshift(lfPre)
+  steps.push(lfPost)
 
   steps.map(s => {
     s.fullId = s.type + '_' + utils.shortHash(name) + '_' + s.id
