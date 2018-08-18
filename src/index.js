@@ -166,14 +166,14 @@ function processFile (name, data, main) {
   let modules = data.modules || {}
   let steps = []
   for (const module in modules) {
-    let out = Modules[module](modules[module])
+    let out = Modules[module](modules[module], {data, name}, main)
     steps = steps.concat(Array.isArray(out) ? out : [out])
   }
 
   // lifecycle
   let lifecycle = data.lifecycle || {}
-  let lfPre = utils.wrap('lf', 'pre', {})
-  let lfPost = utils.wrap('lf', 'post', {})
+  let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + data.name})
+  let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + data.name})
   for (const lf in lifecycle) {
     let [name, part] = lf.split('.')
     let data = Array.isArray(lifecycle[lf]) ? lifecycle[lf].join('\n') : lifecycle[lf]
@@ -200,10 +200,10 @@ function processFile (name, data, main) {
   return {affects, lifecycle, steps, embed, name, version}
 }
 
-function processMain (data) {
+function processMain (data, mainFolder) {
   let groups = data.groups || {}
 
-  return {groups}
+  return {groups, mainFolder}
 }
 
 module.exports = {
