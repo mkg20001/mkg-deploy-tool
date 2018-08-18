@@ -60,11 +60,11 @@ function compileFile (data, main) {
     .varArray('affects_include', data.affects.include)
     .varArray('affects_exclude', data.affects.exclude)
     .var('affects_wildcard', data.affects.wildcard)
-    .if('(contains "${affects_include[@]}" "$(hostname)" || $affects_wildcard) && ! contains "${affects_exclude[@]}" "$(hostname)"', getVars()
+    .if('(contains "$(hostname)" "${affects_include[@]}" || $affects_wildcard) && ! contains "$(hostname)" "${affects_exclude[@]}"', getVars()
       .cmd('headingMain', 'Deploying ' + data.name)
       // uninstall old steps
       .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
-        .if('! contains "${SCRIPT_STEPS[@]}" "${STEP_ID}"', removeScript())
+        .if('! contains "${STEP_ID}" "${SCRIPT_STEPS[@]}"', removeScript())
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()

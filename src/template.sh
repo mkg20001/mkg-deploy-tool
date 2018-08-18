@@ -1,15 +1,11 @@
 #!/bin/bash
 
-# https://stackoverflow.com/q/3685970/3990041
+# https://stackoverflow.com/a/8574392
 function contains() {
-    local n=$#
-    local value=${!n}
-    for ((i=1;i < $#;i++)) {
-        if [ "${!i}" == "${value}" ]; then
-            return 0
-        fi
-    }
-    return 1
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
 }
 
 # main
