@@ -94,6 +94,7 @@ function compileFile (data, main) {
         .append(...data.steps.map(step => utils.tree()
           .var('STEP_ID', step.fullId)
           .if('isStepInstalled', wrapStep('cron', 'Running cronjob for', step))
+          .append('') // fix missing newline
         ))
         .str()
       ).toString('base64') + '|' +
