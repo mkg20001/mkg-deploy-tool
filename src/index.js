@@ -124,8 +124,6 @@ function calcAffects (groups_, calcGrp) {
         groups[group][i] = {type: 'group', not: true, val: groups[e.substr(2)]}
       } else if (e.startsWith('!')) { // host to exclude
         groups[group][i] = {type: 'host', not: true, val: e.substr(1)}
-      } else if (e === '*') {
-        groups[group][i] = {type: 'wildcard'}
       } else {
         groups[group][i] = {type: 'host', val: e}
       }
@@ -148,8 +146,6 @@ function calcAffects (groups_, calcGrp) {
           case 'host':
             ar.push(e.val)
             break
-          case 'wildcard':
-            break
           default: throw new TypeError(e.type)
         }
       })
@@ -164,6 +160,7 @@ function calcAffects (groups_, calcGrp) {
     })
 
     let wildcard = include.indexOf('*') !== -1
+    include = include.forEach(h => h !== '*')
 
     groupsOut[group] = {wildcard, include, exclude}
   }
