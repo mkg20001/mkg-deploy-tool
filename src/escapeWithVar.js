@@ -3,7 +3,7 @@
 const shellEscape = require('shell-escape')
 const dblQuote = '"'
 
-module.exports = (...args) => {
+module.exports = (args) => {
   return args.map(arg => {
     let escaped = shellEscape([arg])
     let quote = escaped[0]
