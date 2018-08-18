@@ -36,7 +36,7 @@ getVersion() {
 }
 
 getInstalledStatus() {
-  safeexec test -e "$STEP_FOLDER/${SCRIPT_ID}_installed"
+  safeexec test -e "$STATE_FOLDER/${SCRIPT_ID}_installed"
   return $ex
 }
 
@@ -45,6 +45,6 @@ getInstalledSteps() {
 }
 
 isStepInstalled() {
-  safeexec test -e "$STEP_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"
+  safeexec test -e "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"
   return $ex
 }
