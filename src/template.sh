@@ -28,6 +28,10 @@ heading() {
   echo -e "\n\n$HLINE\n$*\n$HLINE\n\n"
 }
 
+headingMain() {
+  echo -e "\n\n$HLINE\n *** $* *** \n$HLINE\n\n"
+}
+
 getVersion() {
   cat "$STATE_FOLDER/${SCRIPT_ID}_installed"
 }
