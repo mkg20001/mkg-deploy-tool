@@ -17,7 +17,8 @@ module.exports = (config) => { // config is an array of entries about which rule
         .cmd('systemctl', 'stop', service)
         .cmd('systemctl', 'disable', service)
         .cmd('rm', '-f', '/etc/systemd/system/' + service + '.service')
-        .cmd('systemctl', 'daemon-reload')
+        .cmd('systemctl', 'daemon-reload'),
+      displayName: 'systemd service ' + service
       // TODO: daemon-reload and restart service if service file hash changed
     })
   })
