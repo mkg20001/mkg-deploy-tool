@@ -20,7 +20,7 @@ mkdir -p "$STATE_FOLDER"
 
 HLINE="================================================================================"
 
-CRON_FILE=$(mktemp -f)
+CRON_FILE=$(mktemp)
 
 echo "headingMain 'Running Cron'" > "$CRON_FILE"
 
