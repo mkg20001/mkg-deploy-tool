@@ -38,7 +38,7 @@ safeexec() {
 }
 
 heading() {
-  echo -e "\n\n$HLINE\n$*\n$HLINE\n\n"
+  echo -e "\n$HLINE\n$*\n$HLINE\n"
 }
 
 headingMain() {
