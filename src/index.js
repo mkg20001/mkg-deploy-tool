@@ -56,8 +56,8 @@ function compileFile (data, main) {
     return utils.tree()
       .varExec('STEP_UNINSTALL_PATH', 'stateFnc step uninstall get')
       .cmd('.', '$STEP_UNINSTALL_PATH')
-      .cmd('stateFnc step installed rm')
-      .cmd('stateFnc step uninstall rm')
+      .cmd('stateFnc', 'step', 'installed', 'rm')
+      .cmd('stateFnc', 'step', 'uninstall', 'rm')
   }
 
   return utils.tree()
@@ -116,12 +116,12 @@ function compile (files, mainData) {
   })
 
   out.push(utils.tree()
-    .varArray('SCRIPTS', files.map(s => s.id)))
+    .varArray('SCRIPTS', files.map(s => s.id))
     .varExec('SCRIPTS_INSTALLED', 'getScriptsInstalled')
     .for('SCRIPT_ID', '$SCRIPTS_INSTALLED', utils.tree()
       .if('isScriptInstalled && ! contains "$SCRIPT_ID" "${SCRIPTS[@]}"', utils.tree()
         /* ... */)
-      .str())
+    ).str())
 
   out.push('postRun')
   out.push('')

@@ -35,7 +35,7 @@ const treeFnc = {
   },
   append: (...str) => str.join('\n'),
   b64: (...args) => {
-    return shellEscape('echo', Buffer.from(args.join('\n')).toString('base64')) + ' | base64 -d'
+    return shellEscape(['echo', Buffer.from(args.join('\n')).toString('base64')]) + ' | base64 -d \\'
   }
 }
 
