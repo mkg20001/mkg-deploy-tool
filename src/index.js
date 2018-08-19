@@ -1,6 +1,9 @@
 'use strict'
 
 const utils = require('./utils')
+const fs = require('fs')
+const path = require('path')
+const Template = String(fs.readFileSync(path.join(__dirname, 'template.sh')))
 
 /* eslint-disable guard-for-in */
 /* eslint-disable no-template-curly-in-string */
@@ -101,6 +104,22 @@ function compileFile (data, main) {
       'base64 -d >> "$CRON_FILE"')
     )
     .str()
+}
+
+function compile (files, mainData) {
+  let tmplBasic = [Template, 'export MAINFOLDER=' + utils.shellEscapeReal([path.dirname(mainData.mainFolder)])]
+  let out = [...tmplBasic, 'mainEntry']
+  let cron = [...tmplBasic, 'cronEntry']
+
+  files.forEach(file => {
+    out.push(compileFile(file, mainData))
+  })
+
+  out.push('postRun')
+  out.push('')
+  cron.push('')
+
+  return out.join('\n').replace('-$-CRONSCRIPT-$-', Buffer.from(cron.join('\n')).toString('base64'))
 }
 
 function calcAffects (groups_, calcGrp) {
@@ -220,5 +239,6 @@ function processMain (data, mainFolder) {
 module.exports = {
   compileFile,
   processFile,
-  processMain
+  processMain,
+  compile
 }
