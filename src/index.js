@@ -132,7 +132,7 @@ function compile (files, mainData) {
     out.push(compileFile(file, mainData))
   })
 
-  out.push('postRun')
+  out.push('mainPost')
   out.push('')
   cron.push('')
 

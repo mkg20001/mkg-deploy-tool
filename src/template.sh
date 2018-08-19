@@ -28,8 +28,18 @@ mainEntry() {
   echo "-$-CRONSCRIPT-$-" | base64 -d > "$CRON_FILE"
 }
 
+mainPost() {
+  echo "cronPost" >> "$CRON_FILE"
+  mv "$CRON_FILE" "$DATA_PREFIX/cron.sh"
+  headingMain "DONE!"
+}
+
 cronEntry() {
   headingMain 'Running Cron'
+}
+
+cronPost() {
+  headingMain "DONE!"
 }
 
 safeexec() {
@@ -130,9 +140,4 @@ isStepInstalledAsEcho() {
 
 getInstalledSteps() {
   safeexec stateFnc step installed ls 2> /dev/null
-}
-
-postRun() {
-  mv "$CRON_FILE" "$DATA_PREFIX/cron.sh"
-  headingMain "DONE!"
 }
