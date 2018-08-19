@@ -45,17 +45,81 @@ headingMain() {
   echo -e "\n\n$HLINE\n *** $* *** \n$HLINE\n\n"
 }
 
-getVersion() {
-  cat "$STATE_FOLDER/${SCRIPT_ID}_installed"
+# statesave
+# scripts/installed/$SCRIPT_ID        -> is installed
+# scripts/uninstall/$SCRIPT_ID        -> uninstall info
+# steps/$SCRIPT_ID/installed/$STEP_ID -> is step installed
+# steps/$SCRIPT_ID/uninstall/$STEP_ID -> uninstall info
+
+stateFnc() {
+  case $1 in
+    script)
+      path="$STATE_FOLDER/scripts/$2/$SCRIPT_ID"
+      ;;
+    step)
+      path="$STATE_FOLDER/steps/$2/$SCRIPT_ID/$STEP_ID"
+      ;;
+  esac
+
+  case $3 in
+    set)
+      shift 3
+      mkdir -p "$(dirname $path)"
+      echo "$@" > "$path"
+      ;;
+    exists)
+      safeexec test -e "$path"
+      return $ex
+      ;;
+    get)
+      cat "$path"
+      ;;
+    ls)
+      ls "$(dirname $path)"
+      ;;
+    rm)
+      rm -f "$path"
+      ;;
+    rmr)
+      rm -rf "$(dirname $path)"
+      ;;
+    path)
+      echo "$path"
+      ;;
+  esac
 }
 
-getInstalledStatus() {
-  safeexec test -e "$STATE_FOLDER/${SCRIPT_ID}_installed"
+getVersion() {
+  safeexec stateFnc script installed get
   return $ex
 }
 
-getInstalledStatusEcho() {
-  safeexec test -e "$STATE_FOLDER/${SCRIPT_ID}_installed"
+isScriptInstalled() {
+  safeexec stateFnc script installed exists
+  return $ex
+}
+
+isScriptInstalledAsEcho() {
+  safeexec stateFnc script installed exists
+  if [ $ex -ne 0 ]; then
+    echo false
+  else
+    echo true
+  fi
+}
+
+getInstalledScripts() {
+  safeexec stateFnc script installed ls
+  return $ex
+}
+
+isStepInstalled() {
+  safeexec stateFnc step installed exists
+  return $ex
+}
+
+isStepInstalledAsEcho() {
+  safeexec stateFnc step installed exists
   if [ $ex -ne 0 ]; then
     echo false
   else
@@ -64,11 +128,7 @@ getInstalledStatusEcho() {
 }
 
 getInstalledSteps() {
-  dir -w 1 "$STATE_FOLDER" | grep "^step_${SCRIPT_ID}_" | sed "s|^step_${SCRIPT_ID}_||g"
-}
-
-isStepInstalled() {
-  safeexec test -e "$STATE_FOLDER/step_${SCRIPT_ID}_${STEP_ID}_installed"
+  safeexec stateFnc step installed ls
   return $ex
 }
 
