@@ -21,9 +21,13 @@ let tmplBasic = [String(fs.readFileSync(path.join(__dirname, 'src', 'template.sh
 let out = [...tmplBasic, 'mainEntry']
 let cron = [...tmplBasic, 'cronEntry']
 
-fs.readdirSync(confDir).filter(f => f.endsWith('.yaml')).forEach(file => {
-  out.push(compileFile(processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData), mainData))
-})
+fs
+  .readdirSync(confDir)
+  .filter(f => f.endsWith('.yaml'))
+  .map(file => processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData))
+  .sort((a, b) => a.priority - b.priority)
+  .map(data => compileFile(data, mainData))
+  .forEach(file => out.push(file))
 
 out.push('postRun')
 out.push('')
