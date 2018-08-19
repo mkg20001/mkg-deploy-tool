@@ -75,7 +75,7 @@ stateFnc() {
       cat "$path"
       ;;
     ls)
-      ls "$(dirname $path)"
+      dir -w 1 "$(dirname $path)"
       ;;
     rm)
       rm -f "$path"
@@ -84,14 +84,15 @@ stateFnc() {
       rm -rf "$(dirname $path)"
       ;;
     path)
+      mkdir -p "$(dirname $path)"
       echo "$path"
       ;;
   esac
 }
 
 getVersion() {
-  safeexec stateFnc script installed get
-  return $ex
+  echo "$(stateFnc script installed get)"
+  safeexec stateFnc script installed get 2> /dev/null
 }
 
 isScriptInstalled() {
@@ -109,8 +110,8 @@ isScriptInstalledAsEcho() {
 }
 
 getInstalledScripts() {
-  safeexec stateFnc script installed ls
-  return $ex
+#  safeexec stateFnc script installed ls 2> /dev/null
+  dir -w 1 "$STATE_FOLDER/scripts/installed" 2> /dev/null || true
 }
 
 isStepInstalled() {
@@ -128,8 +129,7 @@ isStepInstalledAsEcho() {
 }
 
 getInstalledSteps() {
-  safeexec stateFnc step installed ls
-  return $ex
+  safeexec stateFnc step installed ls 2> /dev/null
 }
 
 postRun() {

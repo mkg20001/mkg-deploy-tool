@@ -15,6 +15,20 @@ const Modules = {
   ufw: require('./mod/ufw')
 }
 
+function removeScript (type) {
+  if (!type) {
+    type = 'step'
+  }
+
+  const typeUP = type.toUpperCase()
+
+  return utils.tree()
+    .varExec(typeUP + '_UNINSTALL_PATH', 'stateFnc', type, 'uninstall', 'path')
+    .cmd('.', '$' + typeUP + '_UNINSTALL_PATH')
+    .cmd('stateFnc', type, 'installed', 'rm')
+    .cmd('stateFnc', type, 'uninstall', 'rm')
+}
+
 function compileFile (data, main) {
   /*
 
@@ -47,17 +61,9 @@ function compileFile (data, main) {
       .var('SCRIPT_VERSION', data.version)
       .var('SCRIPT_ID', data.id)
       .varExec('SCRIPT_CUR_VERSION', 'getVersion')
-      .varExec('SCRIPT_INSTALLED', 'getInstalledStatusEcho')
+      .varExec('SCRIPT_INSTALLED', 'isScriptInstalledAsEcho')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
-  }
-
-  function removeScript () {
-    return utils.tree()
-      .varExec('STEP_UNINSTALL_PATH', 'stateFnc step uninstall get')
-      .cmd('.', '$STEP_UNINSTALL_PATH')
-      .cmd('stateFnc', 'step', 'installed', 'rm')
-      .cmd('stateFnc', 'step', 'uninstall', 'rm')
   }
 
   return utils.tree()
@@ -68,11 +74,12 @@ function compileFile (data, main) {
       .cmd('headingMain', 'Deploying ' + data.name)
       // uninstall old steps
       .for('STEP_ID', '$STEPS_INSTALLED', utils.tree()
-        .if('! contains "${STEP_ID}" "${SCRIPT_STEPS[@]}" && isStepInstalled ${STEP_ID}', removeScript())
+        .if('! contains "${STEP_ID}" "${SCRIPT_STEPS[@]}" && isStepInstalled', removeScript())
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()
         .var('STEP_ID', step.fullId)
+        .varExec('STEP_UNINSTALL_PATH', 'stateFnc', 'step', 'uninstall', 'path')
         .append(wrapStep('pre', 'Running pre hook for', step))
         // if not installed: install
         .if('! isStepInstalled', wrapStep('install', 'Installing', step),
@@ -83,17 +90,18 @@ function compileFile (data, main) {
         .append('stateFnc step installed set "true"') // mark step as installed
 
         .b64(wrapStep('remove', 'Removing', step)) // write b64 uninstaller
-        .append(' > "$(stateFnc step uninstall path)"') // ...to uninstall path
+        .append(' > "$STEP_UNINSTALL_PATH"') // ...to uninstall path
 
         .append(wrapStep('post', 'Running post hook for', step))
       ))
       .append('stateFnc script installed set "$SCRIPT_VERSION"') // mark script as installed
 
+      .varExec('SCRIPT_UNINSTALL_PATH', 'stateFnc', 'script', 'uninstall', 'path')
       .b64(getVars() // write b64 script uninstaller
         .for('STEP_ID', 'getInstalledSteps', utils.tree()
           .if('isStepInstalled', removeScript())
         ))
-      .append('> "$(stateFnc script uninstall path)"') // ...to uninstaller path
+      .append('> "$SCRIPT_UNINSTALL_PATH"') // ...to uninstaller path
 
       .b64(getVars() // append b64 cron script
         .append(...data.steps.map(step => utils.tree()
@@ -111,17 +119,18 @@ function compile (files, mainData) {
   let out = [...tmplBasic, 'mainEntry']
   let cron = [...tmplBasic, 'cronEntry']
 
+  // uninstall old scripts
+  out.push(utils.tree()
+    .varArray('SCRIPTS', files.map(s => s.id))
+    .varExec('SCRIPTS_INSTALLED', 'getInstalledScripts')
+    .for('SCRIPT_ID', '$SCRIPTS_INSTALLED', utils.tree()
+      .if('! contains "$SCRIPT_ID" "${SCRIPTS[@]}"', removeScript('script')))
+    .str())
+
+  // update/install current scripts
   files.forEach(file => {
     out.push(compileFile(file, mainData))
   })
-
-  out.push(utils.tree()
-    .varArray('SCRIPTS', files.map(s => s.id))
-    .varExec('SCRIPTS_INSTALLED', 'getScriptsInstalled')
-    .for('SCRIPT_ID', '$SCRIPTS_INSTALLED', utils.tree()
-      .if('isScriptInstalled && ! contains "$SCRIPT_ID" "${SCRIPTS[@]}"', utils.tree()
-        /* ... */)
-    ).str())
 
   out.push('postRun')
   out.push('')
