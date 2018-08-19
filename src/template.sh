@@ -17,7 +17,7 @@ function contains() {
 
 HLINE="================================================================================"
 
-DATA_PREFIX="/etc/test-script-data" # TODO: make this customizable
+DATA_PREFIX="#DATAPREFIX-DPLTOOL#" # TODO: make this customizable
 STATE_FOLDER="$DATA_PREFIX/state"
 
 mainEntry() {

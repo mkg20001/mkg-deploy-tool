@@ -115,7 +115,7 @@ function compileFile (data, main) {
 }
 
 function compile (files, mainData) {
-  let tmplBasic = [Template, 'export MAINFOLDER=' + utils.shellEscapeReal([path.dirname(mainData.mainFolder)])]
+  let tmplBasic = [Template.replace('#DATAPREFIX-DPLTOOL#', mainData.config.dataDirectory), 'export MAINFOLDER=' + utils.shellEscapeReal([path.dirname(mainData.mainFolder)])]
   let out = [...tmplBasic, 'mainEntry']
   let cron = [...tmplBasic, 'cronEntry']
 
@@ -249,8 +249,9 @@ function processFile (name, data, main) {
 
 function processMain (data, mainFolder) {
   let groups = data.groups || {}
+  let config = data.config || {dataDirectory: '/etc/mkg-deploy-tool'}
 
-  return {groups, mainFolder}
+  return {groups, config, mainFolder}
 }
 
 module.exports = {
