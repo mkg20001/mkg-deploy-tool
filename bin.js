@@ -7,6 +7,7 @@
 const yaml = require('js-yaml')
 const fs = require('fs')
 const path = require('path')
+const utils = require('./src/utils')
 
 const read = (file) => yaml.safeLoad(String(fs.readFileSync(file)))
 
@@ -21,6 +22,6 @@ const files = fs
   .readdirSync(confDir)
   .filter(f => f.endsWith('.yaml'))
   .map(file => processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData))
-  .sort((a, b) => a.priority - b.priority)
+  .sort(utils.sortByPrio)
 
 console.log(compile(files, mainData))

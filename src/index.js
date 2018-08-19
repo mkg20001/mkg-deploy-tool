@@ -219,7 +219,7 @@ function processFile (name, data, main) {
     s.fullId = s.type + '_' + utils.shortHash(name) + '_' + s.id
   })
 
-  steps = steps.sort((a, b) => a.priority - b.priority)
+  steps = steps.sort(utils.sortByPrio)
 
   // embed
   let embed = data.embed || []

@@ -3,6 +3,7 @@
 const shellEscapeReal = require('shell-escape')
 const shellEscape = require('./escapeWithVar')
 const parser = require('bash-parser')
+const alphanumSort = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'}).compare
 
 const treeFnc = {
   if: (sCond, sIf, ...args) => {
@@ -66,11 +67,36 @@ function wrap (type, data, prop) {
   return Object.assign({id: shortHash(data), type}, prop)
 }
 
+function sortByPrio (a, b) {
+  if (typeof a.priority === 'undefined') {
+    a.priority = 100
+  }
+
+  if (typeof b.priority === 'undefined') {
+    b.priority = 100
+  }
+
+  if (a.priority - b.priority) {
+    return a.priority - b.priority
+  }
+
+  if (a.name) {
+    return alphanumSort(a.name, b.name)
+  }
+
+  if (a.fullId) {
+    return alphanumSort(a.fullId, b.fullId)
+  }
+
+  return 0
+}
+
 module.exports = {
   parseCmd,
   shellEscape,
   shellEscapeReal,
   wrap,
   tree,
-  shortHash
+  shortHash,
+  sortByPrio
 }
