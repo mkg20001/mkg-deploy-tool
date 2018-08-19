@@ -220,6 +220,7 @@ function processFile (name, data, main) {
   let lifecycle = data.lifecycle || {}
   let lfPre = utils.wrap('lf', 'pre', {displayName: 'lifecycle ' + name, priority: 0})
   let lfPost = utils.wrap('lf', 'post', {displayName: 'lifecycle ' + name, priority: 1000})
+  lfPre.upgradeCond = lfPost.upgradeCond = '[ "$SCRIPT_CUR_VERSION" != "$SCRIPT_VERSION" ]' // default upgrade on version change
   for (const lf in lifecycle) {
     let [name, part] = lf.split('.')
     let data = Array.isArray(lifecycle[lf]) ? lifecycle[lf].join('\n') : lifecycle[lf]
