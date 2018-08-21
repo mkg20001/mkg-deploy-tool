@@ -3,7 +3,7 @@
 const utils = require('../utils')
 
 module.exports.main = (config, main) => {
-  Object.keys(config).map(user => {
+  return Object.keys(config).map(user => {
     let userConfig = config[user]
     let main = utils.tree()
       .var('user', user)
@@ -19,7 +19,8 @@ module.exports.main = (config, main) => {
       priority: 10,
       install: main,
       remove: utils.tree()
-        .cmd('deluser', user),
+        .cmd('deluser', user)
+        .str(),
       upgrade: main,
       version: utils.shortHash(JSON.stringify(userConfig)) // upgrade when config changes
     })
