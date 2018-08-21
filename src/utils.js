@@ -30,6 +30,9 @@ const treeFnc = {
   for: (as, from, code) => {
     return ['for ' + as + ' in ' + from + '; do', code, 'done'].join('\n')
   },
+  while: (cond, code) => {
+    return ['while ' + cond + '; do', code, 'done'].join('\n')
+  },
   cmd: (...args) => {
     return shellEscape(args)
   },
