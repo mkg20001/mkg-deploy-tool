@@ -10,6 +10,7 @@ const Template = String(fs.readFileSync(path.join(__dirname, 'template.sh')))
 /* eslint-disable complexity */
 
 const Modules = {
+  backup: require('./mod/backup'),
   link: require('./mod/link'),
   pkg: require('./mod/pkg'),
   systemd: require('./mod/systemd'),
@@ -17,6 +18,7 @@ const Modules = {
 }
 
 const ModulesMain = {
+  backup: require('./mod/backup').main,
   auth: require('./mod/auth').main
 }
 
