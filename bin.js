@@ -8,6 +8,7 @@ const yaml = require('js-yaml')
 const fs = require('fs')
 const path = require('path')
 const utils = require('./src/utils')
+const glob = require('glob')
 
 const read = (file) => yaml.safeLoad(String(fs.readFileSync(file)))
 
@@ -18,9 +19,7 @@ const confDir = path.join(path.dirname(main), 'deploy.d')
 
 const mainData = processMain(read(main), path.dirname(main))
 
-const files = fs
-  .readdirSync(confDir)
-  .filter(f => f.endsWith('.yaml'))
+const files = glob.sync(confDir + '/**/*.yaml')
   .map(file => processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData))
   .sort(utils.sortByPrio)
 
