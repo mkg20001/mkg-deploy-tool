@@ -71,8 +71,14 @@ module.exports.main = (config, main) => {
         createCmd.push(...config.extraArgs.create)
       }
       createCmd.push('::' + config.create.name, '${LIST[@]}') // eslint-disable-line no-template-curly-in-string
+      createCmd.unshift('safeexec')
 
-      out.cmd(...createCmd)
+      out // run create, if warning try again, otherwise continue. exit with error if final exit code non-zero
+        .var('RUN_CREATE', 'true')
+        .while('$RUN_CREATE', utils.tree()
+          .cmd(...createCmd)
+          .if('[ $ex -ne 1 ]', 'RUN_CREATE=false'))
+        .if('[ $ex -ne 0 ]', utils.tree().cmd('echo', 'Borg backup failed with $ex').cmd('exit', '$ex'))
 
       out.cmd('rm', '-rf', '${RM_LIST[@]}') // eslint-disable-line no-template-curly-in-string
 
