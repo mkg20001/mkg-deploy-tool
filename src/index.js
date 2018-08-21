@@ -50,7 +50,16 @@ function compileFile (data, main) {
 
   function wrapStep (what, whatDisplay, step) {
     if (step[what]) {
-      return utils.tree().append('# ' + step.fullId + ' ' + what).cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
+      if (!step[what].upgradeCond) {
+        step[what].upgradeCond = '[ "$STEP_CUR_VERSION" != "$STEP_VERSION" ]' // upgrade on version change
+      }
+
+      return utils.tree()
+        .var('STEP_ID', step.fullId)
+        .var('STEP_VERSION', step.version || 'v0')
+        .varExec('STEP_CUR_VERSION', 'getStepVersion')
+        .varExec('STEP_INSTALLED', 'isStepInstalledAsEcho')
+        .append('# ' + step.fullId + ' ' + what).cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
     }
     return 'true # ' + step.fullId + ' ' + what
   }
@@ -87,7 +96,7 @@ function compileFile (data, main) {
           step.upgradeCond || 'false', wrapStep('upgrade', 'Upgrading', step),
           // else update
           wrapStep('update', 'Updating', step))
-        .append('stateFnc step installed set "true"') // mark step as installed
+        .append('stateFnc step installed set "$STEP_VERSION"') // mark step as installed
 
         .b64(wrapStep('remove', 'Removing', step)) // write b64 uninstaller
         .append(' > "$STEP_UNINSTALL_PATH"') // ...to uninstall path

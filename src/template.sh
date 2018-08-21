@@ -101,8 +101,11 @@ stateFnc() {
 }
 
 getVersion() {
-  echo "$(stateFnc script installed get)"
   safeexec stateFnc script installed get 2> /dev/null
+}
+
+getStepVersion() {
+  safeexec stateFnc step installed get 2> /dev/null
 }
 
 isScriptInstalled() {
