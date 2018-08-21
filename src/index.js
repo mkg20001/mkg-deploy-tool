@@ -62,6 +62,7 @@ function compileFile (data, main) {
       return utils.tree()
         .var('STEP_ID', step.fullId)
         .var('STEP_VERSION', step.version || 'v0')
+        .var('STEP_NAME', step.displayName || step.fullId)
         .varExec('STEP_CUR_VERSION', 'getStepVersion')
         .varExec('STEP_INSTALLED', 'isStepInstalledAsEcho')
         .append('# ' + step.fullId + ' ' + what).cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()

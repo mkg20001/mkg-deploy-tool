@@ -7,7 +7,7 @@ module.exports = (config) => { // config is an array of entries about which rule
     const serviceFile = config[service]
 
     return utils.wrap('systemd', service, {
-      priority: 200,
+      priority: 20,
       install: utils.tree()
         .cmd('ln', '-sf', '$MAINFOLDER/' + serviceFile, '/etc/systemd/system/' + service + '.service')
         .cmd('systemctl', 'daemon-reload')

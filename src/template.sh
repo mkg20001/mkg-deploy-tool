@@ -55,6 +55,50 @@ headingMain() {
   echo -e "\n\n$HLINE\n *** $* *** \n$HLINE\n\n"
 }
 
+# backup
+
+LIST=()
+RM_LIST=()
+BAK_RM_FILE=false
+
+_append_backup() {
+  comp="$1"
+  shift
+  type="$1"
+  shift
+
+  found=false
+
+  for f in "$@"; do
+    if test "-$comp" "$f"; then
+      echo "backup->$SCRIPT_NAME: Include $type '$f' in backup..."
+      LIST+=("$f")
+      if $BAK_RM_FILE; then
+        echo "backup->$SCRIPT_NAME: Include $type '$f' for post-backup deletion..."
+        RM_LIST+=("$f")
+      fi
+      found=true
+    fi
+  done
+
+  if ! $found; then
+    echo "backup->$SCRIPT_NAME: ERROR: Did not find anything for glob $SCRIPT_NAME->'$CURRENT_GLOB'" 2>&1
+    exit 2
+  fi
+}
+
+backup_append_files() {
+  _append_backup "f" "file" "$@"
+}
+
+backup_append_folders() {
+  _append_backup "d" "folder" "$@"
+}
+
+backup_append_items() {
+  _append_backup "e" "item" "$@"
+}
+
 # statesave
 # scripts/installed/$SCRIPT_ID        -> is installed
 # scripts/uninstall/$SCRIPT_ID        -> uninstall info
