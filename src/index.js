@@ -145,13 +145,16 @@ function compile (files, mainData) {
     .str())
 
   // post-steps
-  const fakePostFile = processFile('postMainModule', {priority: 1001}, mainData)
+  const fakePostFile = processFile('postMainModule', {priority: 1001, affects: ['*']}, mainData)
   let steps = []
   for (const module in mainData.modules) {
     let out = ModulesMain[module](mainData.modules[module], mainData)
     steps = steps.concat(Array.isArray(out) ? out : [out])
   }
-  steps = fakePostFile.lifecycle = steps.sort(utils.sortByPrio)
+  steps = fakePostFile.steps = steps.sort(utils.sortByPrio)
+  steps.map(s => {
+    s.fullId = s.type + '_' + utils.shortHash('postMainModule') + '_' + s.id
+  })
 
   files.push(fakePostFile)
 
@@ -279,8 +282,9 @@ function processFile (name, data, main) {
 function processMain (data, mainFolder) {
   let groups = data.groups || {}
   let config = data.config || {dataDirectory: '/etc/mkg-deploy-tool'}
+  let modules = data.modules || {}
 
-  return {groups, config, mainFolder}
+  return {groups, config, mainFolder, modules}
 }
 
 module.exports = {

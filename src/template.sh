@@ -15,7 +15,15 @@ function contains() {
 
 # main
 
+# because npm
+export SUDO_GID=
+export SUDO_COMMAND=
+export SUDO_USER=
+export SUDO_UID=
+export HOME=/root
+
 HLINE="================================================================================"
+HOSTNAME=$(hostname)
 
 DATA_PREFIX="#DATAPREFIX-DPLTOOL#" # TODO: make this customizable
 STATE_FOLDER="$DATA_PREFIX/state"

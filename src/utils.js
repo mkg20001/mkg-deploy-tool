@@ -27,6 +27,15 @@ const treeFnc = {
   var: (name, val) => {
     return name + '=' + shellEscape([val])
   },
+  evarArray: (name, ar) => {
+    return 'export ' + name + '=(' + shellEscape(ar) + ')'
+  },
+  evarExec: (name, ...cmd) => {
+    return 'export ' + name + '=$(' + shellEscape(cmd) + ')'
+  },
+  evar: (name, val) => {
+    return 'export ' + name + '=' + shellEscape([val])
+  },
   for: (as, from, code) => {
     return ['for ' + as + ' in ' + from + '; do', code, 'done'].join('\n')
   },
