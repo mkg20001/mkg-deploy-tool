@@ -17,10 +17,10 @@ const {compile, processFile, processMain} = require('.')
 const main = fs.realpathSync(process.argv[2])
 const confDir = path.join(path.dirname(main), 'deploy.d')
 
-const mainData = processMain(read(main), path.dirname(main))
+const mainData = processMain(read(main), main)
 
 const files = glob.sync(confDir + '/**/*.yaml')
-  .map(file => processFile(path.basename(file).split('.')[0], read(path.join(confDir, file)), mainData))
+  .map(file => processFile(path.basename(file).split('.')[0], read(file), mainData))
   .sort(utils.sortByPrio)
 
 const out = compile(files, mainData)

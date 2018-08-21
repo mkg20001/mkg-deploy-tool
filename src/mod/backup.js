@@ -1,6 +1,6 @@
 'use strict'
 
-const utils = require('./utils')
+const utils = require('../utils')
 
 module.exports = (config, file, main) => {
   let out = utils.tree()
