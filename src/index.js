@@ -12,7 +12,12 @@ const Template = String(fs.readFileSync(path.join(__dirname, 'template.sh')))
 const Modules = {
   link: require('./mod/link'),
   pkg: require('./mod/pkg'),
+  systemd: require('./mod/systemd'),
   ufw: require('./mod/ufw')
+}
+
+const ModulesMain = {
+  auth: require('./mod/auth').main
 }
 
 function removeScript (type) {
@@ -135,6 +140,17 @@ function compile (files, mainData) {
     .for('SCRIPT_ID', '$SCRIPTS_INSTALLED', utils.tree()
       .if('! contains "$SCRIPT_ID" "${SCRIPTS[@]}"', removeScript('script')))
     .str())
+
+  // post-steps
+  const fakePostFile = processFile('postMainModule', {priority: 1001}, mainData)
+  let steps = []
+  for (const module in mainData.modules) {
+    let out = ModulesMain[module](mainData.modules[module], mainData)
+    steps = steps.concat(Array.isArray(out) ? out : [out])
+  }
+  steps = fakePostFile.lifecycle = steps.sort(utils.sortByPrio)
+
+  files.push(fakePostFile)
 
   // update/install current scripts
   files.forEach(file => {
