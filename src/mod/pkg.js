@@ -6,7 +6,8 @@ module.exports = (config) => { // config is an array of entries about which rule
   return config.map((pkg) =>
     utils.wrap('pkg', pkg, {
       install: utils.shellEscape(['apt-get', 'install', '-y', pkg]),
-      displayName: 'apt package ' + pkg
+      displayName: 'apt package ' + pkg,
+      priority: 15
     })
   )
 }
