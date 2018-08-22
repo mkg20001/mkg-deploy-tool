@@ -132,7 +132,7 @@ function compileFile (data, main) {
 }
 
 function compile (files, mainData) {
-  let tmplBasic = [Template.replace('#DATAPREFIX-DPLTOOL#', mainData.config.dataDirectory), 'export MAINFOLDER=' + utils.shellEscapeReal([path.dirname(mainData.mainFolder)])]
+  let tmplBasic = [Template.replace('#DATAPREFIX-DPLTOOL#', mainData.config.dataDirectory), 'export MAINFOLDER=' + utils.shellEscapeReal([mainData.mainFolder])]
   let out = [...tmplBasic, 'mainEntry']
   let cron = [...tmplBasic, 'cronEntry']
 
