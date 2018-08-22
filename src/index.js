@@ -13,6 +13,7 @@ const Modules = {
   backup: require('./mod/backup'),
   link: require('./mod/link'),
   pkg: require('./mod/pkg'),
+  snap: require('./mod/snap'),
   systemd: require('./mod/systemd'),
   ufw: require('./mod/ufw')
 }
