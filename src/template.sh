@@ -294,7 +294,7 @@ docker_run_d() {
 
 # other
 
-contains() { # does $1 contain $2?
+file_contains() { # does $1 contain $2?
   safeexec grep "$2" "$1" > /dev/null
   return $ex
 }
