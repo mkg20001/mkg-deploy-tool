@@ -27,9 +27,16 @@ HOSTNAME=$(hostname)
 
 DATA_PREFIX="#DATAPREFIX-DPLTOOL#" # TODO: make this customizable
 STATE_FOLDER="$DATA_PREFIX/state"
+CACHE="$DATA_PREFIX/cache"
+
+cmnEntry() {
+  mkdir -p "$STATE_FOLDER"
+  mkdir -p "$CACHE"
+  find "$CACHE" -mtime +1 -delete
+}
 
 mainEntry() {
-  mkdir -p "$STATE_FOLDER"
+  cmnEntry
 
   CRON_FILE=$(mktemp)
 
@@ -43,6 +50,8 @@ mainPost() {
 }
 
 cronEntry() {
+  cmnEntry
+
   headingMain 'Running Cron'
 }
 
