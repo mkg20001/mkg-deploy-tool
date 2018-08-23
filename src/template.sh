@@ -196,3 +196,143 @@ isStepInstalledAsEcho() {
 getInstalledSteps() {
   safeexec stateFnc step installed ls 2> /dev/null
 }
+
+# cache
+
+cachename() {
+  name=$(echo "$1" | sed -r "s|[^a-z0-9A-Z]|_|g")
+  cpath="$CACHE/$name"
+}
+
+get_cache() {
+  cachename "$1"
+  cat "$cpath"
+}
+
+has_cache() {
+  cachename "$1"
+  safeexec test -e "$cpath"
+  return $ex
+}
+
+set_cache() {
+  cachename "$1"
+  touch "$cpath"
+}
+
+with_cache() {
+  cachename "$1"
+  shift
+  if [ ! -e "$cpath" ]; then
+    safeexec "$@"
+    if [ "$ex" == "0" ]; then
+      touch "$cpath"
+    fi
+    return $ex
+  fi
+}
+
+# git
+
+git_get_commit() {
+  git -C "$1" rev-parse --verify HEAD
+}
+
+git_pull() {
+  curC=$(git_get_commit "$1")
+  git -C "$1" pull
+  newC=$(git_get_commit "$1")
+
+  safexec "$curC" == "$newC"
+  return $ex
+}
+
+# docker
+
+_docker_req() {
+  curl_cached "$1" -H "Authorization: Bearer $DTOK"
+}
+
+docker_get_token() {
+  DTOK=$(curl -s "https://auth.docker.io/token?service=registry.docker.io&scope=$1" | jq -r .token)
+}
+
+docker_get_img_repo_hash() {
+  url="https://registry.hub.docker.com/v2/$1/manifests/$2"
+  cachename "$url"
+  if [ ! -e "$cpath" ]; then
+    docker_get_token "repository:$1:pull"
+  fi
+  # _docker_req "https://registry.hub.docker.com/v2/$1/manifests/$2" -I | grep "Etag" | grep -o "[a-z0-9]*:[a-z0-9]*" | tail -n 1
+  _docker_req "$url" | jq -r ".history[0].v1Compatibility" | jq -r ".container"
+}
+
+docker_get_img_local_hash() {
+  # docker image inspect "$1:$2" | jq -r ".[0].Id"
+  docker image inspect "$1:$2" | jq -r ".[0].Container"
+}
+
+docker_check_image_uptodate() {
+  safeexec test "$(docker_get_img_local_hash $1 $2)" == "$(docker_get_img_repo_hash $1 $2)"
+  return $ex
+}
+
+docker_run_d() {
+  name="$1"
+  shift
+  image="$1"
+  shift
+  tag="$1"
+  shift
+  if ! docker_check_image_uptodate "$image" "$tag"; then
+    docker pull "$image:$tag"
+    safeexec docker stop "$name"
+    safeexec docker rm "$name"
+    docker run -d --name "$name" "$@" "$image:$tag"
+  fi
+}
+
+# other
+
+contains() { # does $1 contain $2?
+  safeexec grep "$2" "$1" > /dev/null
+  return $ex
+}
+
+update_file() { # update src=$1 dest=$2
+  if ! diff -u "$2" "$1"; then
+    echo "Updating $2..."
+    cp "$1" "$2"
+  fi
+}
+
+repl_in_file() { # replace $1 with $2 in $3
+  sed "s|$1|$2|g" -i "$3"
+}
+
+is_cjdns() {
+  r=$(cjdaddr)
+  test ! -z "$r"
+  return $?
+}
+
+cjdaddr() {
+  ifconfig | grep " fc" | grep -o "fc[0-9a-z:]*" || echo
+}
+
+curl_cached() {
+  url="$1"
+  shift
+  cachename "$url"
+  if [ -e "$cpath" ]; then
+    cat "$cpath"
+  else
+    safeexec curl -s "$url" "$@" -o "$cpath"
+    if [ $ex -ne 0 ]; then
+      rm -f "$cpath"
+    else
+      cat "$cpath"
+    fi
+    return $ex
+  fi
+}
