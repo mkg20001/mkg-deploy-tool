@@ -112,7 +112,7 @@ backup_append_folders() {
   _append_backup "d" "folder" "$@"
 }
 
-backup_append_items() {
+backup_append_cmdout() {
   _append_backup "e" "item" "$@"
 }
 
