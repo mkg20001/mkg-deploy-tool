@@ -39,6 +39,8 @@ mainEntry() {
   cmnEntry
 
   CRON_FILE=$(mktemp)
+  chmod 775 "$CRON_FILE"
+  chown root:root "$CRON_FILE"
 
   echo "-$-CRONSCRIPT-$-" | base64 -d > "$CRON_FILE"
 }
