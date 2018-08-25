@@ -56,15 +56,10 @@ function compileFile (data, main) {
 
   */
 
-  function wrapStep (what, whatDisplay, step) {
+  function wrapStep (what, whatDisplay, step, vars) {
     if (step[what]) {
       return utils.tree()
-        .var('STEP_ID', step.fullId)
-        .var('STEP_VERSION', step.version || 'v0')
-        .var('STEP_NAME', step.displayName || step.fullId)
-        .varExec('STEP_CUR_VERSION', 'getStepVersion')
-        .varExec('STEP_INSTALLED', 'isStepInstalledAsEcho')
-        .append('# ' + step.fullId + ' ' + what).cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
+        .append('# ' + step.fullId + ' ' + what).append(vars ? getStepVars(step) : '').cmd('heading', whatDisplay + ' ' + (step.displayName || step.fullId) + '...').append(step[what]).str()
     }
     return 'true # ' + step.fullId + ' ' + what
   }
@@ -78,6 +73,16 @@ function compileFile (data, main) {
       .varExec('SCRIPT_INSTALLED', 'isScriptInstalledAsEcho')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
+      .varExec('STEP_UNINSTALL_PATH', 'stateFnc', 'step', 'uninstall', 'path')
+  }
+
+  function getStepVars (step) {
+    return utils.tree()
+      .var('STEP_ID', step.fullId)
+      .var('STEP_VERSION', step.version || 'v0')
+      .var('STEP_NAME', step.displayName || step.fullId)
+      .varExec('STEP_CUR_VERSION', 'getStepVersion')
+      .varExec('STEP_INSTALLED', 'isStepInstalledAsEcho')
   }
 
   return utils.tree()
@@ -92,8 +97,7 @@ function compileFile (data, main) {
       )
       // install/upgrade/update new ones
       .append(...data.steps.map(step => utils.tree()
-        .var('STEP_ID', step.fullId)
-        .varExec('STEP_UNINSTALL_PATH', 'stateFnc', 'step', 'uninstall', 'path')
+        .append(getStepVars(step))
         .append(wrapStep('pre', 'Running pre hook for', step))
         // if not installed: install
         .if('! isStepInstalled', wrapStep('install', 'Installing', step),
@@ -103,7 +107,7 @@ function compileFile (data, main) {
           wrapStep('update', 'Updating', step))
         .append('stateFnc step installed set "$STEP_VERSION"') // mark step as installed
 
-        .b64(wrapStep('remove', 'Removing', step)) // write b64 uninstaller
+        .b64(wrapStep('remove', 'Removing', step, true)) // write b64 uninstaller
         .append(' > "$STEP_UNINSTALL_PATH"') // ...to uninstall path
 
         .append(wrapStep('post', 'Running post hook for', step))
@@ -119,7 +123,7 @@ function compileFile (data, main) {
 
       .b64(getVars() // append b64 cron script
         .append(...data.steps.map(step => utils.tree()
-          .var('STEP_ID', step.fullId)
+          .append(getStepVars(step))
           .if('isStepInstalled', wrapStep('cron', 'Running cronjob for', step))
           .append('') // fix missing newline
         )))
