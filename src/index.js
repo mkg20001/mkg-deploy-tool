@@ -73,7 +73,6 @@ function compileFile (data, main) {
       .varExec('SCRIPT_INSTALLED', 'isScriptInstalledAsEcho')
       .varExec('STEPS_INSTALLED', 'getInstalledSteps')
       .varArray('SCRIPT_STEPS', data.steps.map(s => s.fullId))
-      .varExec('STEP_UNINSTALL_PATH', 'stateFnc', 'step', 'uninstall', 'path')
   }
 
   function getStepVars (step) {
@@ -83,6 +82,7 @@ function compileFile (data, main) {
       .var('STEP_NAME', step.displayName || step.fullId)
       .varExec('STEP_CUR_VERSION', 'getStepVersion')
       .varExec('STEP_INSTALLED', 'isStepInstalledAsEcho')
+      .varExec('STEP_UNINSTALL_PATH', 'stateFnc', 'step', 'uninstall', 'path')
   }
 
   return utils.tree()
