@@ -57,10 +57,6 @@ function compileFile (data, main) {
   */
 
   function wrapStep (what, whatDisplay, step) {
-    if (!step.upgradeCond) {
-      step.upgradeCond = '[ "$STEP_CUR_VERSION" != "$STEP_VERSION" ]' // upgrade on version change
-    }
-
     if (step[what]) {
       return utils.tree()
         .var('STEP_ID', step.fullId)

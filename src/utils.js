@@ -79,7 +79,7 @@ const shortHash = (str) => {
 }
 
 function wrap (type, data, prop) {
-  return Object.assign({id: shortHash(data), type}, prop)
+  return Object.assign({id: shortHash(data), type, upgradeCond: '[ "$STEP_CUR_VERSION" != "$STEP_VERSION" ]'}, prop)
 }
 
 function sortByPrio (a, b) {
