@@ -4,7 +4,7 @@ const utils = require('../utils')
 const fs = require('fs')
 const path = require('path')
 
-module.exports = (config, file, main) => { // config is an array of entries about which rules to add/rm
+module.exports = (config, main) => { // config is an array of entries about which rules to add/rm
   return Object.keys(config).map(service => {
     const serviceFile = config[service]
 
