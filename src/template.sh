@@ -25,7 +25,7 @@ export HOME=/root
 HLINE="================================================================================"
 HOSTNAME=$(hostname)
 
-DATA_PREFIX="#DATAPREFIX-DPLTOOL#" # TODO: make this customizable
+DATA_PREFIX="#DATAPREFIX-DPLTOOL#"
 STATE_FOLDER="$DATA_PREFIX/state"
 CACHE="$DATA_PREFIX/cache"
 
@@ -127,17 +127,21 @@ backup_append_cmdout() {
 stateFnc() {
   case $1 in
     script)
-      path="$STATE_FOLDER/scripts/$2/$SCRIPT_ID"
+      dir="$STATE_FOLDER/scripts/$2"
+      path="$dir/$SCRIPT_ID"
       ;;
     step)
-      path="$STATE_FOLDER/steps/$2/$SCRIPT_ID/$STEP_ID"
+      dir="$STATE_FOLDER/steps/$2/$SCRIPT_ID"
+      path="$dir/$STEP_ID"
       ;;
   esac
 
   case $3 in
     set)
       shift 3
-      mkdir -p "$(dirname $path)"
+      if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+      fi
       echo "$@" > "$path"
       ;;
     exists)
@@ -148,16 +152,18 @@ stateFnc() {
       cat "$path"
       ;;
     ls)
-      dir -w 1 "$(dirname $path)"
+      dir -w 1 "$dir"
       ;;
     rm)
       rm -f "$path"
       ;;
     rmr)
-      rm -rf "$(dirname $path)"
+      rm -rf "$dir"
       ;;
     path)
-      mkdir -p "$(dirname $path)"
+      if [ ! -d "$dir" ]; then
+        mkdir -p "$dir"
+      fi
       echo "$path"
       ;;
   esac
