@@ -32,7 +32,7 @@ CACHE="$DATA_PREFIX/cache"
 cmnEntry() {
   mkdir -p "$STATE_FOLDER"
   mkdir -p "$CACHE"
-  find "$CACHE" -mtime +0 -delete
+  find "$CACHE" -type f -mtime +0 -delete
 }
 
 mainEntry() {
