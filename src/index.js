@@ -160,7 +160,7 @@ function compile (files, mainData) {
     s.fullId = s.type + '_' + utils.shortHash('preMainModule') + '_' + s.id
   })
 
-  files.push(fakePreFile)
+  files.unshift(fakePreFile)
 
   // post-steps
   const fakePostFile = processFile('postMainModule', {priority: 1001, affects: ['*']}, mainData)
