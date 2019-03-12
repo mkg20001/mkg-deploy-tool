@@ -42,3 +42,5 @@ popd
 
   return out
 }
+
+module.exports.main.isPre = true

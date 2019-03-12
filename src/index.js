@@ -146,12 +146,30 @@ function compile (files, mainData) {
       .if('! contains "$SCRIPT_ID" "${SCRIPTS[@]}"', removeScript('script')))
     .str())
 
-  // post-steps
-  const fakePostFile = processFile('postMainModule', {priority: 1001, affects: ['*']}, mainData)
+  // pre-steps
+  const fakePreFile = processFile('preMainModule', {priority: 1, affects: ['*']}, mainData)
   let steps = []
   for (const module in mainData.modules) {
-    let out = ModulesMain[module](mainData.modules[module], mainData)
-    steps = steps.concat(Array.isArray(out) ? out : [out])
+    if (ModulesMain[module].isPre) {
+      let out = ModulesMain[module](mainData.modules[module], mainData)
+      steps = steps.concat(Array.isArray(out) ? out : [out])
+    }
+  }
+  steps = fakePreFile.steps = steps.sort(utils.sortByPrio)
+  steps.map(s => {
+    s.fullId = s.type + '_' + utils.shortHash('preMainModule') + '_' + s.id
+  })
+
+  files.push(fakePreFile)
+
+  // post-steps
+  const fakePostFile = processFile('postMainModule', {priority: 1001, affects: ['*']}, mainData)
+  steps = []
+  for (const module in mainData.modules) {
+    if (!ModulesMain[module].isPre) {
+      let out = ModulesMain[module](mainData.modules[module], mainData)
+      steps = steps.concat(Array.isArray(out) ? out : [out])
+    }
   }
   steps = fakePostFile.steps = steps.sort(utils.sortByPrio)
   steps.map(s => {
