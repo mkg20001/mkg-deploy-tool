@@ -11,8 +11,9 @@ module.exports.main = (config, main) => {
     let main = utils.tree()
       .var('GIT_ORIGIN', origin)
       .var('GIT_DEST', dest)
-      .if('[ -e "$GIT_ORIGIN" ]', () => utils.tree()
-        .append(`
+      .if('[ -e "$GIT_ORIGIN" ]',
+        utils.tree()
+          .append(`
 pushd "$GIT_DEST"
 git remote set-url origin "$GIT_ORIGIN"
 git submodule init .
@@ -23,9 +24,11 @@ git pull --recurse-submodules
 git submodule update
 git gc --aggressive
 popd
-`),
-      () => utils.tree()
-        .cmd('git', 'clone', '--recursive', origin, dest))
+`)
+          .str(),
+        utils.tree()
+          .cmd('git', 'clone', '--recursive', origin, dest)
+          .str())
       .str()
 
     return utils.wrap('git', dest, {
