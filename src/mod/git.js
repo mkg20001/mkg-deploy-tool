@@ -11,7 +11,7 @@ module.exports.main = (config, main) => {
     let main = utils.tree()
       .var('GIT_ORIGIN', origin)
       .var('GIT_DEST', dest)
-      .if('[ -e "$GIT_ORIGIN" ]',
+      .if('[ -e "$GIT_DEST" ]',
         utils.tree()
           .append(`
 pushd "$GIT_DEST"
