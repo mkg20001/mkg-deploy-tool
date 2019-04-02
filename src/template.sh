@@ -301,10 +301,13 @@ docker_run_d() {
   shift
   tag="$1"
   shift
-  if ! docker_check_image_uptodate "$image" "$tag"; then
+  CID=$(docker ps -q -f status=running -f name=^/${name}$)
+  if ! docker_check_image_uptodate "$image" "$tag" || [ -z "${CID}" ]; then
     docker pull "$image:$tag"
-    safeexec docker stop "$name"
-    safeexec docker rm "$name"
+    if [ ! -z "${CID}" ]; then
+      safeexec docker stop "$name"
+      safeexec docker rm "$name"
+    fi
     docker run -d --name "$name" "$@" "$image:$tag"
   fi
 }
