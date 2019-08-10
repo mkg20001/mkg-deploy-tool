@@ -21,7 +21,8 @@ const Modules = {
 const ModulesMain = {
   auth: require('./mod/auth').main,
   backup: require('./mod/backup').main,
-  git: require('./mod/git').main
+  git: require('./mod/git').main,
+  log: require('./mod/log').main
 }
 
 function removeScript (type) {
