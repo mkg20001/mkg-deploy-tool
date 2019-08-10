@@ -21,7 +21,8 @@ fi`)
 
   return utils.wrap('log', logfile, {
     priority: 1,
-    pre: main,
+    pre: utils.tree().append(main).append('headingMain "Deploy @ $(date)" | awk \'{ system(""); print strftime("%m.%d.%Y %H:%M:%S %z:"), "meta:", $0; system(""); }\' >> "$LOGFILE"'),
+    cron: utils.tree().append(main).append('headingMain "Cron @ $(date)" | awk \'{ system(""); print strftime("%m.%d.%Y %H:%M:%S %z:"), "meta:", $0; system(""); }\' >> "$LOGFILE"'),
     version: '1'
   })
 }
