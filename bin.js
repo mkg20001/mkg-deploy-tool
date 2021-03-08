@@ -43,6 +43,7 @@ if (process.argv[3] === 'oneline') {
         cmd: `echo "${b64}" | base64 -d | ${algo} -dc | sudo bash -`
       }
     })
+    .filter(Boolean)
     .concat([{algo: 'plain', cmd: `echo "${Buffer.from(out).toString('base64')}" | base64 -d | sudo bash -E -`}])
     .sort((a, b) => a.length - b.length)[0]
   console.error('Compressed with %s', shortest.algo)
