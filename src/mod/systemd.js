@@ -22,7 +22,7 @@ module.exports = (config, file, main) => { // config is an array of entries abou
         .cmd('rm', '-f', '/etc/systemd/system/' + service + '.service')
         .cmd('systemctl', 'daemon-reload'),
       displayName: 'systemd service ' + service,
-      version: utils.shortHash(fs.readFileSync(path.join(main.mainFolder, serviceFile))),
+      version: utils.shortHash(fs.readFileSync(path.join(main.mainFolderLocal, serviceFile))),
       upgrade: utils.tree()
         .cmd('systemctl', 'daemon-reload')
         .cmd('systemctl', 'restart', service)

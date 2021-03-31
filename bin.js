@@ -18,6 +18,8 @@ const main = fs.realpathSync(process.argv[2])
 const confDir = path.join(path.dirname(main), 'deploy.d')
 
 const mainData = processMain(read(main), path.dirname(main))
+mainData.mainFolderLocal = mainData.mainFolder
+
 if (process.env.OVERRIDE_LOCATION) {
   mainData.mainFolder = process.env.OVERRIDE_LOCATION
 }
